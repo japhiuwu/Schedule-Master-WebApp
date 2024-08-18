@@ -1,14 +1,30 @@
-from fastapi import FastAPI, Request, Depends
-
-from models.Userlogin import UserRegister
+from fastapi import FastAPI, Request, Response, File, UploadFile
 
 from controllers.o365 import login_o365 , auth_callback_o365
 from controllers.google import login_google , auth_callback_google
-from controllers.firebase import register_user_firebase, login_user_firebase
+from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code, activate_user
+from controllers.edificios import fetch_edificios, fetch_aulas, fetch_aula
+from controllers.clases import fetch_clases, fetch_carreras, fetch_secciones, fetch_facultades
+from controllers.term import fetch_terms
 
-from utils.security import validate
+from models.UserRegister import UserRegister
+from models.UserLogin import UserLogin
+from models.UserActivation import UserActivation
+from models.clase import clase
+
+
+from fastapi.middleware.cors import CORSMiddleware
+from utils.security import validate, validate_func, validate_for_inactive
 
 app = FastAPI()
+
+app.add_middleware(
+    CORSMiddleware,
+    allow_origins=["*"],  # Permitir todos los orígenes
+    allow_credentials=True,
+    allow_methods=["*"],  # Permitir todos los métodos
+    allow_headers=["*"],  # Permitir todos los encabezados
+)
 
 @app.get("/")
 async def hello():
@@ -50,6 +66,45 @@ async def user(request: Request):
         "email": request.state.email
     }
 
+@app.get("/terms")
+async def terms(request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_terms( )
+
+@app.get("/edificios")
+async def edificio(request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_edificios( )
+
+@app.get("/edificios/{id}")
+async def edificio(request: Request, response: Response, id: str):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_aulas(id)
+
+@app.get("/edificios/{id_edificio}/aulas/{id_aula}")
+async def edificio(request: Request, response: Response, id_edificio: str, id_aula: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_aula(id_edificio, id_aula)
+
+@app.get("/facultades")
+async def clase(request: Request, response: Response):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_facultades()
+
+@app.get("/facultades/{id}")
+async def clase(request: Request, response: Response, id: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_carreras(id)
+
+@app.get("/facultades/{id_facultad}/carrera/{id_carrera}")
+async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_clases( id_carrera)
+
+@app.get("/facultades/{id_efacultad}/carrera/{id_carrera}/clase/{id_clase}")
+async def clase(request: Request, response: Response, id_efacultad: int, id_carrera: str, id_clase: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_secciones(id_carrera, id_clase)
 
 if __name__ == "__main__":
     import uvicorn
