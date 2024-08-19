@@ -45,23 +45,12 @@ async def fetch_carreras(id: int):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-async def fetch_clases(carrera: str):
-    query = f"SELECT * FROM sm.Vista_Carrera_Secciones WHERE Cod_Carrera = ?"
+async def fetch_clases(carrera: str, term: str):
+    query = f"SELECT * FROM sm.Vista_Carrera_Secciones WHERE Cod_Carrera = ? AND Cod_Periodo = ?"
 
     try:
         logger.info(f"QUERY LIST")
-        result_json = await fetch_query_as_json(query, (carrera))
-        result_dict = json.loads(result_json)
-        return result_dict
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
-    
-async def fetch_secciones(carrera: str, clase: int):
-    query = f"SELECT * FROM sm.Secciones WHERE Cod_Carrera = ? AND Cod_Clase = ? ORDER BY Cod_Seccion;"
-
-    try:
-        logger.info(f"QUERY LIST")
-        result_json = await fetch_query_as_json(query, (carrera, clase))
+        result_json = await fetch_query_as_json(query, (carrera, term))
         result_dict = json.loads(result_json)
         return result_dict
     except Exception as e:

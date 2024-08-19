@@ -24,7 +24,7 @@ load_dotenv()
 # blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
 async def fetch_edificios():
-    query = f"SELECT * FROM sm.Edificios;"
+    query = f"SELECT * FROM sm.Edificios ORDER BY Nombre;"
 
     try:
         logger.info(f"QUERY LIST")
@@ -45,13 +45,3 @@ async def fetch_aulas(id: str):
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
     
-async def fetch_aula(edificio: str, aula: int):
-    query = f"SELECT * FROM sm.Vista_Secciones WHERE Cod_Edificio = ? AND Num_Aula = ?;"
-
-    try:
-        logger.info(f"QUERY LIST")
-        result_json = await fetch_query_as_json(query, (edificio, aula))
-        result_dict = json.loads(result_json)
-        return result_dict
-    except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))

@@ -1,7 +1,4 @@
 .env
 secrets/
 __pycache__/
-<<<<<<< HEAD
 sm-api/
-=======
->>>>>>> f63112ef319dfffbb45c28548b28faaf3697d721

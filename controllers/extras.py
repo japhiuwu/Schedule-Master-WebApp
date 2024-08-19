@@ -23,6 +23,18 @@ load_dotenv()
 
 # blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
+async def fetch_docentes(id: str):
+    query = f"SELECT * FROM sm.Vista_Docentes WHERE Cod_Carrera = ? ORDER BY Primer_Nombre;"
+
+    try:
+        logger.info(f"QUERY LIST")
+        result_json = await fetch_query_as_json(query, (id))
+        result_dict = json.loads(result_json)
+        
+        return result_dict
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
+    
 async def fetch_terms():
     query = f"SELECT * FROM sm.Vista_Periodos_Academicos ORDER BY Orden, Fecha_Inicio;"
 
