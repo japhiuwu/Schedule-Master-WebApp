@@ -6,12 +6,12 @@ from controllers.firebase import register_user_firebase, login_user_firebase, ge
 from controllers.edificios import fetch_edificios, fetch_aulas
 from controllers.clases import fetch_clases, fetch_carreras, fetch_facultades
 from controllers.extras import fetch_docentes, fetch_terms
-from controllers.secciones import fetch_secciones_aula, fetch_seccion_carrera, fetch_secciones_carrera, update_seccion, delete_seccion
+from controllers.secciones import fetch_secciones_aula, fetch_seccion_carrera, fetch_secciones_carrera, update_seccion, delete_seccion, create_seccion
 
 from models.UserRegister import UserRegister
 from models.UserLogin import UserLogin
 from models.UserActivation import UserActivation
-from models.clase import clase
+from models.seccion import seccion
 
 from fastapi.middleware.cors import CORSMiddleware
 from utils.security import validate, validate_func, validate_for_inactive
@@ -33,6 +33,9 @@ async def hello():
         , "version": "0.1.0"
     }
 
+
+
+""" Login """
 @app.get("/login/m365")
 async def login():
     return await login_o365()
@@ -59,6 +62,8 @@ async def login_custom(user: UserRegister):
     return await login_user_firebase(user)
 
 
+
+
 @app.get("/user")
 @validate
 async def user(request: Request):
@@ -76,6 +81,9 @@ async def docentes(request: Request, response: Response, id: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_docentes(id)
 
+
+
+""" Edificios """
 @app.get("/edificios")
 async def edificio(request: Request, response: Response):
     response.headers["Cache-Control"] = "no-cache"
@@ -91,6 +99,9 @@ async def edificio(request: Request, response: Response, id_edificio: str, id_au
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_secciones_aula(id_edificio, id_aula, term)
 
+
+
+""" Facultades """
 @app.get("/facultades")
 async def clase(request: Request, response: Response):
     response.headers["Cache-Control"] = "no-cache"
@@ -106,25 +117,34 @@ async def clase(request: Request, response: Response, id_facultad: int, id_carre
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_clases( id_carrera, term)
 
+
+
+""" Secciones """
 @app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/term/{term}")
 async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str, id_clase: int, term: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_secciones_carrera(id_carrera, id_clase, term)
 
 @app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
-async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int, id_facultad: int):
+async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_seccion_carrera(id_carrera, id_clase, id_seccion)
 
-@app.put("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
-async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int, id_facultad: int):
+@app.put("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+async def actualizar_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, id_seccion: int, section: seccion):
     response.headers["Cache-Control"] = "no-cache"
-    return await update_seccion(id_carrera, id_clase, id_seccion)
+    return await update_seccion(id_term, id_carrera, id_clase, id_seccion, section.Cod_Edificio, section.Num_Aula, section.Num_Empleado, section.Cupos, section.Dias, section.Hora_Inicial, section.Hora_Final, section.Portada)
 
-@app.delete("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
-async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int, id_facultad: int):
+@app.delete("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+async def borrar_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, id_seccion: int):
     response.headers["Cache-Control"] = "no-cache"
-    return await delete_seccion(id_carrera, id_clase, id_seccion)
+    return await delete_seccion(id_term, id_carrera, id_clase, id_seccion)
+
+@app.post("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion")
+async def crear_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, section: seccion):
+    response.headers["Cache-Control"] = "no-cache"
+    return await create_seccion(id_term, id_carrera, id_clase, section.Cod_Seccion ,section.Cod_Edificio, section.Num_Aula, section.Num_Empleado, section.Cupos, section.Dias, section.Hora_Inicial, section.Hora_Final, section.Portada)
+
 
 if __name__ == "__main__":
     import uvicorn
