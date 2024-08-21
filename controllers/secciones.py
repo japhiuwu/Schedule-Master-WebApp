@@ -12,6 +12,7 @@ from datetime import datetime, timedelta
 from dotenv import load_dotenv
 
 from utils.database import fetch_query_as_json
+from models.seccion import seccion
 
 logging.basicConfig(level=logging.INFO)
 logger = logging.getLogger(__name__)
@@ -75,11 +76,12 @@ async def delete_seccion(periodo: str, carrera: str, clase: int, seccion: int):
 
     return result
 
-async def create_seccion(periodo: str, carrera: str, clase: int, cod_seccion: int, edificio: str, aula: int, empleado: str, cupos: int, dias: str, inicio: str, fin: str, portada: str):
+async def create_seccion(periodo: str, carrera: str, clase: int, section: seccion):
+    print("ejecutando create seccion")
     query = f"EXEC sm.Crear_Seccion @Cod_Periodo = ?, @Cod_Carrera = ?, @Cod_Clase = ?, @Cod_Seccion = ?, @Cod_Edificio = ?, @Num_Aula = ?, @Num_Empleado = ?, @Cupos = ?, @Dias = ?, @Hora_Inicial = ?, @Hora_Final = ?, @Portada = ?;"
     result = {}
     try:
-        result_json = await fetch_query_as_json(query, (periodo, carrera, clase, cod_seccion, edificio, aula, empleado, cupos, dias, inicio, fin, portada), is_procedure=True)
+        result_json = await fetch_query_as_json(query, (section.Cod_Periodo, section.Cod_Carrera, section.Cod_Clase, section.Cod_Seccion ,section.Cod_Edificio, section.Num_Aula, section.Num_Empleado, section.Cupos, section.Dias, section.Hora_Inicial, section.Hora_Final, section.Portada), is_procedure=True)
         logger.info("Resultado de la ejecución del procedimiento: %s", result_json)
         return {"status": 200, "data": result_json}
     except Exception as e:

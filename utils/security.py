@@ -13,7 +13,7 @@ from functools import wraps
 load_dotenv()
 
 SECRET_KEY = os.getenv("SECRET_KEY")
-SECRET_KEY_FUNC = os.getenv("SECRET_KEY_FUNC")
+""" SECRET_KEY_FUNC = os.getenv("SECRET_KEY_FUNC") """
 
 
 def generate_pkce_verifier():
@@ -25,14 +25,14 @@ def generate_pkce_challenge(verifier):
 
 
 # Función para crear un JWT
-def create_jwt_token(firstname:str, lastname:str, email: str, active: bool):
+def create_jwt_token(firstname:str, lastname:str, email: str):
     expiration = datetime.utcnow() + timedelta(hours=1)  # El token expira en 1 hora
     token = jwt.encode(
         {
             "firstname": firstname,
             "lastname": lastname,
             "email": email,
-            "active": active,
+            "active": True,
             "exp": expiration,
             "iat": datetime.utcnow()
         },

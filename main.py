@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],  # Permitir todos los orígenes
+    allow_origins=["http://localhost:3000"],  # Permitir todos los orígenes
     allow_credentials=True,
     allow_methods=["*"],  # Permitir todos los métodos
     allow_headers=["*"],  # Permitir todos los encabezados
@@ -58,7 +58,7 @@ async def register(user: UserRegister):
 
 
 @app.post("/login/custom")
-async def login_custom(user: UserRegister):
+async def login_custom(user: UserLogin):
     return await login_user_firebase(user)
 
 
@@ -140,10 +140,10 @@ async def borrar_seccion(request: Request, response: Response, id_term: str, id_
     response.headers["Cache-Control"] = "no-cache"
     return await delete_seccion(id_term, id_carrera, id_clase, id_seccion)
 
-@app.post("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion")
-async def crear_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, section: seccion):
+@app.post("/seccion")
+async def crear_seccion(request: Request, response: Response, section: seccion):
     response.headers["Cache-Control"] = "no-cache"
-    return await create_seccion(id_term, id_carrera, id_clase, section.Cod_Seccion ,section.Cod_Edificio, section.Num_Aula, section.Num_Empleado, section.Cupos, section.Dias, section.Hora_Inicial, section.Hora_Final, section.Portada)
+    return await create_seccion(section)
 
 
 if __name__ == "__main__":

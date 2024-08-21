@@ -5,6 +5,7 @@ import logging
 import traceback
 import random
 
+from datetime import datetime
 from dotenv import load_dotenv
 from fastapi import HTTPException
 
@@ -51,8 +52,8 @@ async def register_user_firebase(user: UserRegister):
     try:
         # Crear usuario en Firebase Authentication
         user_record = firebase_auth.create_user(
-            email=user.email,
-            password=user.password
+            email=user.Email,
+            password=user.Password
         )
 
     except Exception as e:
@@ -62,14 +63,25 @@ async def register_user_firebase(user: UserRegister):
             detail=f"Error al registrar usuario: {e}"
         )
 
-    query = f" exec otd.create_user @email = '{user.email}', @firstname = '{user.firstname}', @lastname = '{user.lastname}'"
+    query = f"EXEC sm.Crear_Usuario_Proc @ID_Usuario = ?, @Email = ?, @Fecha_Creacion = ?, @Ultimo_Acceso = ?, @Primer_Nombre = ?, @Segundo_Nombre = ?, @Primer_Apellido = ?, @Segundo_Apellido = ?, @Foto_Perfil = ?;"
     result = {}
     try:
-
-        result_json = await fetch_query_as_json(query, is_procedure=True)
+        params = (
+            user.Id_Usuario,
+            user.Email,
+            datetime.now(),
+            datetime.now(),
+            user.Primer_Nombre,
+            user.Segundo_Nombre,
+            user.Primer_Apellido,
+            user.Segundo_Apellido,
+            user.Foto_Perfil
+        )
+        logger.info("Ejecutando procedimiento registro:", params)
+        result_json = await fetch_query_as_json(query, params, is_procedure=True)
         ##result = json.loads(result_json)[0]
 
-        await inser_message_on_queue(user.email)
+        """ await inser_message_on_queue(user.Email) """
 
         return {"message": "Usuario registrado exitosamente"}
 
@@ -102,8 +114,8 @@ async def login_user_firebase(user: UserLogin):
         api_key = os.getenv("FIREBASE_API_KEY")  # Reemplaza esto con tu apiKey de Firebase
         url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={api_key}"
         payload = {
-            "email": user.email,
-            "password": user.password,
+            "email": user.Email,
+            "password": user.Password,
             "returnSecureToken": True
         }
         response = requests.post(url, json=payload)
@@ -115,25 +127,20 @@ async def login_user_firebase(user: UserLogin):
                 detail=f"Error al autenticar usuario: {response_data['error']['message']}"
             )
 
-        query = f"""select 
-                        email
-                        , firstname
-                        , lastname
-                        , active
-                    from [otd].[users]
-                    where email = '{ user.email }'
-                    """
+        query = f"""SELECT Email, Primer_Nombre, Primer_Apellido, Foto_Perfil FROM sm.Usuarios WHERE Email = ?;"""
 
         try:
-            result_json = await fetch_query_as_json(query)
+            result_json = await fetch_query_as_json(query, (user.Email))
             result_dict = json.loads(result_json)
             return {
                 "message": "Usuario autenticado exitosamente",
+                "profile" : result_dict[0]["Foto_Perfil"],
+                "first_name" : result_dict[0]["Primer_Nombre"],
+                "last_name" : result_dict[0]["Primer_Apellido"],
                 "idToken": create_jwt_token(
-                    result_dict[0]["firstname"],
-                    result_dict[0]["lastname"],
-                    user.email,
-                    result_dict[0]["active"]
+                    result_dict[0]["Primer_Nombre"],
+                    result_dict[0]["Primer_Apellido"],
+                    user.Email
                 )
             }
         except Exception as e:
@@ -148,7 +155,7 @@ async def login_user_firebase(user: UserLogin):
         }
         raise HTTPException(
             status_code=400,
-            detail=f"Error al registrar usuario: {error_detail}"
+            detail=f"Error al autenticar usuario: {error_detail}"
         )
 
 
