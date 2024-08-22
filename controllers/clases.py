@@ -46,7 +46,7 @@ async def fetch_carreras(id: int):
         raise HTTPException(status_code=500, detail=str(e))
     
 async def fetch_clases(carrera: str, term: str):
-    query = f"SELECT * FROM sm.Vista_Carrera_Secciones WHERE Cod_Carrera = ? AND Cod_Periodo = ?"
+    query = f"SELECT * FROM sm.Vista_Carrera_Secciones WHERE Cod_Carrera = ? AND (Cod_Periodo = ? OR Cod_Periodo IS NULL);"
 
     try:
         logger.info(f"QUERY LIST")

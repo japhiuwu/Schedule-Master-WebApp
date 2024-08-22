@@ -19,13 +19,13 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_SAK")
-# AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
+AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_SAK")
+AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
 
-# blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
 async def fetch_seccion_carrera(carrera: str, clase: int, seccion: int):
-    query = f"SELECT * FROM sm.Vista_Secciones WHERE Cod_Carrera = ? AND Cod_Clase = ? AND  Cod_Seccion = ?;"
+    query = f"SELECT * FROM sm.Vista_Secciones WHERE Cod_Carrera = ? AND Cod_Clase = ? AND Cod_Seccion = ?;"
 
     try:
         logger.info(f"QUERY LIST")
@@ -76,7 +76,7 @@ async def delete_seccion(periodo: str, carrera: str, clase: int, seccion: int):
 
     return result
 
-async def create_seccion(periodo: str, carrera: str, clase: int, section: seccion):
+async def create_seccion(section: seccion):
     print("ejecutando create seccion")
     query = f"EXEC sm.Crear_Seccion @Cod_Periodo = ?, @Cod_Carrera = ?, @Cod_Clase = ?, @Cod_Seccion = ?, @Cod_Edificio = ?, @Num_Aula = ?, @Num_Empleado = ?, @Cupos = ?, @Dias = ?, @Hora_Inicial = ?, @Hora_Final = ?, @Portada = ?;"
     result = {}

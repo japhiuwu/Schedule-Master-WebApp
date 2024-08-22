@@ -72,11 +72,13 @@ async def user(request: Request):
     }
 
 @app.get("/terms")
+@validate
 async def terms(request: Request, response: Response):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_terms( )
 
 @app.get("/docentes/{id}")
+@validate
 async def docentes(request: Request, response: Response, id: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_docentes(id)
@@ -85,16 +87,19 @@ async def docentes(request: Request, response: Response, id: str):
 
 """ Edificios """
 @app.get("/edificios")
+@validate
 async def edificio(request: Request, response: Response):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_edificios( )
 
 @app.get("/edificios/{id}")
+@validate
 async def edificio(request: Request, response: Response, id: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_aulas(id)
 
 @app.get("/edificios/{id_edificio}/aulas/{id_aula}/term/{term}")
+@validate
 async def edificio(request: Request, response: Response, id_edificio: str, id_aula: int, term: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_secciones_aula(id_edificio, id_aula, term)
@@ -103,16 +108,19 @@ async def edificio(request: Request, response: Response, id_edificio: str, id_au
 
 """ Facultades """
 @app.get("/facultades")
+@validate
 async def clase(request: Request, response: Response):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_facultades()
 
 @app.get("/facultades/{id}")
+@validate
 async def clase(request: Request, response: Response, id: int):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_carreras(id)
 
 @app.get("/facultades/{id_facultad}/carrera/{id_carrera}/term/{term}")
+@validate
 async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str, term: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_clases( id_carrera, term)
@@ -121,29 +129,48 @@ async def clase(request: Request, response: Response, id_facultad: int, id_carre
 
 """ Secciones """
 @app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/term/{term}")
+@validate
 async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str, id_clase: int, term: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_secciones_carrera(id_carrera, id_clase, term)
 
 @app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+@validate
 async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_seccion_carrera(id_carrera, id_clase, id_seccion)
 
 @app.put("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+@validate
 async def actualizar_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, id_seccion: int, section: seccion):
     response.headers["Cache-Control"] = "no-cache"
     return await update_seccion(id_term, id_carrera, id_clase, id_seccion, section.Cod_Edificio, section.Num_Aula, section.Num_Empleado, section.Cupos, section.Dias, section.Hora_Inicial, section.Hora_Final, section.Portada)
 
 @app.delete("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+@validate
 async def borrar_seccion(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int, id_seccion: int):
     response.headers["Cache-Control"] = "no-cache"
     return await delete_seccion(id_term, id_carrera, id_clase, id_seccion)
 
 @app.post("/seccion")
+@validate
 async def crear_seccion(request: Request, response: Response, section: seccion):
     response.headers["Cache-Control"] = "no-cache"
     return await create_seccion(section)
+
+
+""" BLOB STORAGE """
+@app.post("/user/{id}/profile")
+@validate
+async def upload_files(request: Request, response: Response, id: int, files: list[UploadFile] = File(...) ):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_upload_profile( request.state.email, id, files )
+
+@app.get("/user/{id}/profile")
+@validate
+async def download_files(request: Request, response: Response, id: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_profile(id)
 
 
 if __name__ == "__main__":
