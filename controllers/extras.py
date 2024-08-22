@@ -18,6 +18,7 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
+
 AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_SAK")
 AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
 
@@ -47,28 +48,50 @@ async def fetch_terms():
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
-async def fetch_upload_profile( codPeriodo: str, codSeccion: int, codCarrera: str, codClase: int, files: list[UploadFile] = File(...) ):
+async def fetch_upload_profile(
+    codPeriodo: str,
+    codSeccion: int,
+    codCarrera: str,
+    codClase: int,
+    files: list[UploadFile] = File(...)
+):
     try:
         for file in files:
-
-            query = f"UPDATE sm.Secciones SET Portada = ? WHERE Cod_Periodo = ? AND Cod_Seccion = ? AND Cod_Carrera = ? AND Cod_Clase = ?;
-'"
-            result_json = await fetch_query_as_json(query, (file.filename, codPeriodo, codSeccion, CodCarrera) is_procedure=True)
+            query = """
+                UPDATE sm.Secciones 
+                SET Portada = ? 
+                WHERE Cod_Periodo = ? 
+                AND Cod_Seccion = ? 
+                AND Cod_Carrera = ? 
+                AND Cod_Clase = ?;
+            """
+            params = (file.filename, codPeriodo, codSeccion, codCarrera, codClase)
+            
+            # Suponiendo que fetch_query_as_json es una función asíncrona que ejecuta la consulta
+            result_json = await fetch_query_as_json(query, params, is_procedure=True)
             result = json.loads(result_json)[0]
 
-            if result["status"] == 404:
-                raise HTTPException(status_code=404, detail="Seccion not found")
+            if result.get("status") == 404:
+                raise HTTPException(status_code=404, detail="Sección no encontrada")
 
-            container_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER, blob=f"{codPeriodo}/{codCarrera}/{codClase}/{codSeccion}/{file.filename}")
-            async with aiofiles.open({file.filename}, 'wb') as f:
-                await f.write(await file.read())
-            with open({file.filename}, "rb") as data:
+            # Generar el nombre del blob (ruta en el contenedor)
+            blob_name = f"{codPeriodo}/{codCarrera}/{codClase}/{codSeccion}/{file.filename}"
+            container_client = blob_service_client.get_blob_client(container=AZURE_STORAGE_CONTAINER, blob=blob_name)
+            
+            # Guardar temporalmente el archivo subido
+            async with aiofiles.open(file.filename, 'wb') as f:
+                content = await file.read()
+                await f.write(content)
+            
+            # Subir el archivo al contenedor de Azure Blob Storage
+            with open(file.filename, "rb") as data:
                 container_client.upload_blob(data, overwrite=True)
 
-
-        return {"message": "File uploaded successfully"}
+        return {"message": "Archivo(s) subido(s) exitosamente"}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
+
 
 async def fetch_profile(codPeriodo: str, codSeccion: int, codCarrera: str, codClase: int):
     sas_expiration = datetime.utcnow() + timedelta(minutes=2)

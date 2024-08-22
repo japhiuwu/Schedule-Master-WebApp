@@ -6,7 +6,7 @@ import os
 from fastapi import HTTPException, Depends
 from fastapi import FastAPI, File, UploadFile, HTTPException
 
-# from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -18,10 +18,10 @@ logger = logging.getLogger(__name__)
 
 load_dotenv()
 
-# AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_SAK")
-# AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
+AZURE_STORAGE_CONNECTION_STRING = os.getenv("AZURE_SAK")
+AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
 
-# blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
+blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
 async def fetch_edificios():
     query = f"SELECT * FROM sm.Edificios ORDER BY Nombre;"

@@ -4,7 +4,7 @@ from controllers.o365 import login_o365 , auth_callback_o365
 from controllers.google import login_google , auth_callback_google
 from controllers.firebase import register_user_firebase, login_user_firebase, generate_activation_code, activate_user
 from controllers.edificios import fetch_edificios, fetch_aulas
-from controllers.clases import fetch_clases, fetch_carreras, fetch_facultades
+from controllers.clases import fetch_clases, fetch_carreras, fetch_facultades, fetch_clase
 from controllers.extras import fetch_docentes, fetch_terms
 from controllers.secciones import fetch_secciones_aula, fetch_seccion_carrera, fetch_secciones_carrera, update_seccion, delete_seccion, create_seccion
 
@@ -20,7 +20,7 @@ app = FastAPI()
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["http://localhost:3000"],  # Permitir todos los orígenes
+    allow_origins=["*"],  # Permitir todos los orígenes
     allow_credentials=True,
     allow_methods=["*"],  # Permitir todos los métodos
     allow_headers=["*"],  # Permitir todos los encabezados
@@ -128,17 +128,29 @@ async def clase(request: Request, response: Response, id_facultad: int, id_carre
 
 
 """ Secciones """
-@app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/term/{term}")
+@app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/term/{term}/secciones")
 @validate
 async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str, id_clase: int, term: str):
     response.headers["Cache-Control"] = "no-cache"
     return await fetch_secciones_carrera(id_carrera, id_clase, term)
 
-@app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+@app.get("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}")
 @validate
-async def clase(request: Request, response: Response, id_seccion: int, id_carrera: str, id_clase: int):
+async def clase(request: Request, response: Response, id_term: str, id_carrera: str, id_clase: int):
     response.headers["Cache-Control"] = "no-cache"
-    return await fetch_seccion_carrera(id_carrera, id_clase, id_seccion)
+    return await fetch_clase(id_carrera, id_clase)
+
+@app.get("/facultades/{id_facultad}/carrera/{id_carrera}/clase/{id_clase}")
+@validate
+async def clase(request: Request, response: Response, id_facultad: int, id_carrera: str, id_clase: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_clase(id_carrera, id_clase)
+
+@app.get("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
+@validate
+async def clase(request: Request, response: Response, id_term: str, id_seccion: int, id_carrera: str, id_clase: int):
+    response.headers["Cache-Control"] = "no-cache"
+    return await fetch_seccion_carrera(id_term, id_carrera, id_clase, id_seccion)
 
 @app.put("/term/{id_term}/carrera/{id_carrera}/clase/{id_clase}/seccion/{id_seccion}")
 @validate

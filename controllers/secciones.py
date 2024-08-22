@@ -6,7 +6,7 @@ import os
 from fastapi import HTTPException, Depends
 from fastapi import FastAPI, File, UploadFile, HTTPException
 
-# from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
+from azure.storage.blob import BlobServiceClient, generate_blob_sas, BlobSasPermissions
 
 from datetime import datetime, timedelta
 from dotenv import load_dotenv
@@ -24,12 +24,12 @@ AZURE_STORAGE_CONTAINER = os.getenv("AZURE_STORAGE_CONTAINER")
 
 blob_service_client = BlobServiceClient.from_connection_string(AZURE_STORAGE_CONNECTION_STRING)
 
-async def fetch_seccion_carrera(carrera: str, clase: int, seccion: int):
-    query = f"SELECT * FROM sm.Vista_Secciones WHERE Cod_Carrera = ? AND Cod_Clase = ? AND Cod_Seccion = ?;"
+async def fetch_seccion_carrera(periodo: str, carrera: str, clase: int, seccion: int):
+    query = f"SELECT * FROM sm.Vista_Secciones WHERE Cod_Carrera = ? AND Cod_Clase = ? AND Cod_Periodo = ? AND Cod_Seccion = ?;"
 
     try:
         logger.info(f"QUERY LIST")
-        result_json = await fetch_query_as_json(query, (carrera, clase, seccion))
+        result_json = await fetch_query_as_json(query, (carrera, clase, periodo, seccion))
         result_dict = json.loads(result_json)
         return result_dict
     except Exception as e:
